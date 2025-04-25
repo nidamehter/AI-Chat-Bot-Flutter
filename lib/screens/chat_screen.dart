@@ -14,7 +14,6 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  // scroll controller
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -44,7 +43,6 @@ class _ChatScreenState extends State<ChatScreen> {
           _scrollToBottom();
         }
 
-        // auto scroll to bottom on new message
         chatProvider.addListener(() {
           if (chatProvider.inChatMessages.isNotEmpty) {
             _scrollToBottom();
@@ -55,7 +53,7 @@ class _ChatScreenState extends State<ChatScreen> {
           appBar: AppBar(
             backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
             centerTitle: true,
-            title: const Text('Chat with Gemini'),
+            title: const Text('Chatbot'),
             actions: [
               if (chatProvider.inChatMessages.isNotEmpty)
                 Padding(
@@ -64,15 +62,14 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: IconButton(
                       icon: const Icon(CupertinoIcons.add),
                       onPressed: () async {
-                        // show my animated dialog to start new chat
                         showMyAnimatedDialog(
                           context: context,
-                          title: 'Start New Chat',
-                          content: 'Are you sure you want to start a new chat?',
-                          actionText: 'Yes',
+                          title: 'Yeni Sohbet Başlat',
+                          content:
+                          'Yeni bir sohbet başlatmak istediğinizden emin misiniz?',
+                          actionText: 'Evet',
                           onActionPressed: (value) async {
                             if (value) {
-                              // prepare chat room
                               await chatProvider.prepareChatRoom(
                                   isNewChat: true, chatID: '');
                             }
@@ -92,15 +89,13 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: chatProvider.inChatMessages.isEmpty
                         ? const Center(
-                            child: Text('No messages yet'),
-                          )
+                      child: Text('Henüz mesaj yok.'),
+                    )
                         : ChatMessages(
-                            scrollController: _scrollController,
-                            chatProvider: chatProvider,
-                          ),
+                      scrollController: _scrollController,
+                      chatProvider: chatProvider,
+                    ),
                   ),
-
-                  // input field
                   BottomChatField(
                     chatProvider: chatProvider,
                   )

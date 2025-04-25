@@ -7,55 +7,44 @@ class SettingsProvider extends ChangeNotifier {
   bool _shouldSpeak = false;
 
   bool get isDarkMode => _isDarkMode;
-
   bool get shouldSpeak => _shouldSpeak;
 
-  // get the saved settings from box
-  void getSavedSettings() {
-    final settingsBox = Boxes.getSettings();
+  // Get the saved settings from box
+  Future<void> getSavedSettings() async {
+    final settingsBox = await Boxes.getSettings(); // ✅ await ekledik
 
-    // check is the settings box is open
-    if (settingsBox.isNotEmpty) {
-      // get the settings
+    if (settingsBox.isNotEmpty) { // ✅ Hata giderildi
       final settings = settingsBox.getAt(0);
-      _isDarkMode = settings!.isDarkTheme;
-      _shouldSpeak = settings.shouldSpeak;
+      if (settings != null) {
+        _isDarkMode = settings.isDarkTheme;
+        _shouldSpeak = settings.shouldSpeak;
+        notifyListeners();
+      }
     }
   }
 
-  // toggle the dark mode
-  void toggleDarkMode({
-    required bool value,
-    Settings? settings,
-  }) {
+  // Toggle dark mode
+  Future<void> toggleDarkMode({required bool value, Settings? settings}) async {
     if (settings != null) {
       settings.isDarkTheme = value;
-      settings.save();
+      await settings.save();
     } else {
-      // get the settings box
-      final settingsBox = Boxes.getSettings();
-      // save the settings
-      settingsBox.put(
-          0, Settings(isDarkTheme: value, shouldSpeak: shouldSpeak));
+      final settingsBox = await Boxes.getSettings(); // ✅ await ekledik
+      await settingsBox.put(0, Settings(isDarkTheme: value, shouldSpeak: shouldSpeak));
     }
 
     _isDarkMode = value;
     notifyListeners();
   }
 
-  // toggle the speak
-  void toggleSpeak({
-    required bool value,
-    Settings? settings,
-  }) {
+  // Toggle the speak
+  Future<void> toggleSpeak({required bool value, Settings? settings}) async {
     if (settings != null) {
       settings.shouldSpeak = value;
-      settings.save();
+      await settings.save();
     } else {
-      // get the settings box
-      final settingsBox = Boxes.getSettings();
-      // save the settings
-      settingsBox.put(0, Settings(isDarkTheme: isDarkMode, shouldSpeak: value));
+      final settingsBox = await Boxes.getSettings(); // ✅ await ekledik
+      await settingsBox.put(0, Settings(isDarkTheme: isDarkMode, shouldSpeak: value));
     }
 
     _shouldSpeak = value;

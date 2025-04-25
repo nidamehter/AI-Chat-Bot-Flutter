@@ -21,7 +21,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   File? file;
   String userImage = '';
-  String userName = 'Aayush';
+  String userName = 'Kullanıcı';
   final ImagePicker _picker = ImagePicker();
 
   // pick an image
@@ -44,24 +44,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // get user data
-  void getUserData() {
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        // get user data fro box
-        final userBox = Boxes.getUser();
+  Future<void> getUserData() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final userBox = await Boxes.getUser();
 
-        // check is user data is not empty
-        if (userBox.isNotEmpty) {
-          final user = userBox.getAt(0);
-          setState(
-            () {
-              userImage = user!.name;
-              userName = user.image;
-            },
-          );
+      if (userBox.isNotEmpty) {
+        final user = userBox.getAt(0);
+        if (user != null) {
+          setState(() {
+            userImage = user.image;
+            userName = user.name;
+          });
         }
-      },
-    );
+      }
+    });
   }
 
   @override
@@ -74,12 +70,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('Profil'),
         centerTitle: true,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
           IconButton(
-            // icon: const Icon(Icons.check),
             icon: const Icon(CupertinoIcons.checkmark),
             onPressed: () {
               // save data
@@ -100,7 +95,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   file: file,
                   userImage: userImage,
                   onPressed: () {
-                    // open camera or gallery
                     pickImage();
                   },
                 ),
@@ -116,82 +110,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               const SizedBox(height: 40.0),
 
-              ValueListenableBuilder<Box<Settings>>(
-                valueListenable: Boxes.getSettings().listenable(),
-                builder: (context, box, child) {
-                  if (box.isEmpty) {
-                    return Column(
-                      children: [
-                        // ai voice
-                        SettingsTile(
-                          // icon: Icons.mic,
-                          icon: CupertinoIcons.mic,
-                          title: 'Enable AI voice',
-                          value: false,
-                          onChanged: (value) {
-                            final settingProvider =
-                                context.read<SettingsProvider>();
-                            settingProvider.toggleSpeak(
-                              value: value,
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 10.0),
-
-                        // Theme
-                        SettingsTile(
-                          // icon: Icons.light_mode,
-                          icon: CupertinoIcons.sun_max,
-                          title: 'Theme',
-                          value: false,
-                          onChanged: (value) {
-                            final settingProvider =
-                                context.read<SettingsProvider>();
-                            settingProvider.toggleDarkMode(
-                              value: value,
-                            );
-                          },
-                        ),
-                      ],
-                    );
-                  } else {
-                    final settings = box.getAt(0);
-                    return Column(
-                      children: [
-                        // ai voice
-                        SettingsTile(
-                            icon: CupertinoIcons.mic,
-                            title: 'Enable AI voice',
-                            value: settings!.shouldSpeak,
-                            onChanged: (value) {
-                              final settingProvider =
-                                  context.read<SettingsProvider>();
-                              settingProvider.toggleSpeak(
-                                value: value,
-                              );
-                            }),
-
-                        const SizedBox(height: 10.0),
-
-                        // theme
-                        SettingsTile(
-                          icon: settings.isDarkTheme
-                              ? CupertinoIcons.moon_fill
-                              : CupertinoIcons.sun_max_fill,
-                          title: 'Theme',
-                          value: settings.isDarkTheme,
-                          onChanged: (value) {
-                            final settingProvider =
-                                context.read<SettingsProvider>();
-                            settingProvider.toggleDarkMode(
-                              value: value,
-                            );
-                          },
-                        ),
-                      ],
-                    );
+              FutureBuilder(
+                future: Boxes.getSettings(),
+                builder: (context, AsyncSnapshot<Box<Settings>> snapshot) {
+                  if (!snapshot.hasData) {
+                    return const CircularProgressIndicator();
                   }
+
+                  final settingsBox = snapshot.data!;
+                  return ValueListenableBuilder(
+                    valueListenable: settingsBox.listenable(),
+                    builder: (context, box, child) {
+                      if (box.isEmpty) {
+                        return Column(
+                          children: [
+                            SettingsTile(
+                              icon: CupertinoIcons.mic,
+                              title: 'AI sesini etkinleştir',
+                              value: false,
+                              onChanged: (value) {
+                                final settingProvider =
+                                context.read<SettingsProvider>();
+                                settingProvider.toggleSpeak(value: value);
+                              },
+                            ),
+
+                            const SizedBox(height: 10.0),
+
+                            SettingsTile(
+                              icon: CupertinoIcons.sun_max,
+                              title: 'Tema',
+                              value: false,
+                              onChanged: (value) {
+                                final settingProvider =
+                                context.read<SettingsProvider>();
+                                settingProvider.toggleDarkMode(value: value);
+                              },
+                            ),
+                          ],
+                        );
+                      } else {
+                        final settings = box.getAt(0);
+                        return Column(
+                          children: [
+                            SettingsTile(
+                              icon: CupertinoIcons.mic,
+                              title: 'AI sesini etkinleştir',
+                              value: settings!.shouldSpeak,
+                              onChanged: (value) {
+                                final settingProvider =
+                                context.read<SettingsProvider>();
+                                settingProvider.toggleSpeak(value: value);
+                              },
+                            ),
+                            const SizedBox(height: 10.0),
+                            SettingsTile(
+                              icon: settings.isDarkTheme
+                                  ? CupertinoIcons.moon_fill
+                                  : CupertinoIcons.sun_max_fill,
+                              title: 'Tema',
+                              value: settings.isDarkTheme,
+                              onChanged: (value) {
+                                final settingProvider =
+                                context.read<SettingsProvider>();
+                                settingProvider.toggleDarkMode(value: value);
+                              },
+                            ),
+                          ],
+                        );
+                      }
+                    },
+                  );
                 },
               ),
             ],

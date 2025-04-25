@@ -5,14 +5,27 @@ import 'package:chatbotapp/hive/user_model.dart';
 import 'package:hive/hive.dart';
 
 class Boxes {
-  // get the chat history box
-  static Box<ChatHistory> getChatHistory() =>
-      Hive.box<ChatHistory>(Constants.chatHistoryBox);
+  // Get the chat history box
+  static Future<Box<ChatHistory>> getChatHistory() async {
+    if (!Hive.isBoxOpen(Constants.chatHistoryBox)) {
+      await Hive.openBox<ChatHistory>(Constants.chatHistoryBox);
+    }
+    return Hive.box<ChatHistory>(Constants.chatHistoryBox);
+  }
 
-  // get user box
-  static Box<UserModel> getUser() => Hive.box<UserModel>(Constants.userBox);
+  // Get user box
+  static Future<Box<UserModel>> getUser() async {
+    if (!Hive.isBoxOpen(Constants.userBox)) {
+      await Hive.openBox<UserModel>(Constants.userBox);
+    }
+    return Hive.box<UserModel>(Constants.userBox);
+  }
 
-  // get settings box
-  static Box<Settings> getSettings() =>
-      Hive.box<Settings>(Constants.settingsBox);
+  // Get settings box
+  static Future<Box<Settings>> getSettings() async {
+    if (!Hive.isBoxOpen(Constants.settingsBox)) {
+      await Hive.openBox<Settings>(Constants.settingsBox);
+    }
+    return Hive.box<Settings>(Constants.settingsBox);
+  }
 }

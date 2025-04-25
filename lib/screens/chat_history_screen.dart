@@ -19,25 +19,32 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         centerTitle: true,
-        title: const Text('Chat history'),
+        title: const Text('Chat Geçmişi'),
       ),
-      body: ValueListenableBuilder<Box<ChatHistory>>(
-        valueListenable: Boxes.getChatHistory().listenable(),
-        builder: (context, box, _) {
-          final chatHistory =
-              box.values.toList().cast<ChatHistory>().reversed.toList();
-          return chatHistory.isEmpty
-              ? const EmptyHistoryWidget()
-              : Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ListView.builder(
-                    itemCount: chatHistory.length,
-                    itemBuilder: (context, index) {
-                      final chat = chatHistory[index];
-                      return ChatHistoryWidget(chat: chat);
-                    },
-                  ),
-                );
+      body: FutureBuilder(
+        future: Boxes.getChatHistory(), // ✅ Future bekleniyor
+        builder: (context, AsyncSnapshot<Box<ChatHistory>> snapshot) {
+          if (!snapshot.hasData) {
+            return CircularProgressIndicator(); // ✅ Yüklenme ekranı ekleyelim
+          }
+
+          final chatHistoryBox = snapshot.data!;
+
+          return ValueListenableBuilder(
+            valueListenable: chatHistoryBox.listenable(), // ✅ Artık çalışacak
+            builder: (context, box, widget) {
+              return ListView.builder(
+                itemCount: box.length,
+                itemBuilder: (context, index) {
+                  final chat = box.getAt(index) as ChatHistory;
+                  return ListTile(
+                    title: Text(chat.prompt),
+                    subtitle: Text(chat.response),
+                  );
+                },
+              );
+            },
+          );
         },
       ),
     );
